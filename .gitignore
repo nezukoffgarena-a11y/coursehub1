@@ -11,3 +11,6 @@ uploads
 *.tsbuildinfo
 .DS_Store
 data
+
+.vercel
+.env*
