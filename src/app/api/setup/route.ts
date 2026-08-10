@@ -27,6 +27,6 @@ export async function POST() {
     return NextResponse.json({ message: "Admin created" }, { status: 201 });
   } catch (e: any) {
     console.error(e);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return NextResponse.json({ error: "Server error", detail: String(e?.message || e) }, { status: 500 });
   }
 }
