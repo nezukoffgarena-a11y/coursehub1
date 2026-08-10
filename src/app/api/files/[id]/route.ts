@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getSession, requireAdmin } from "@/lib/auth";
-import { downloadFile, deleteFile } from "@/lib/storage";
+import { getFileUrl, deleteFile } from "@/lib/storage";
 
 export async function GET(
   _req: NextRequest,
@@ -29,20 +29,20 @@ export async function GET(
     }
   }
 
-  let data: Buffer;
+  let signedUrl: string;
   try {
-    data = await downloadFile(file.stored_name);
+    signedUrl = await getFileUrl(file.stored_name);
   } catch (e) {
-    console.error("R2 download failed:", e);
+    console.error("Blob signed URL failed:", e);
     return NextResponse.json({ error: "File missing on storage" }, { status: 404 });
   }
 
-  return new NextResponse(new Uint8Array(data), {
-    headers: {
-      "Content-Type": file.mime_type || "application/octet-stream",
-      "Content-Disposition": `inline; filename="${encodeURIComponent(file.original_name)}"`,
-    },
-  });
+  const redirect = NextResponse.redirect(signedUrl);
+  redirect.headers.set(
+    "Content-Disposition",
+    `inline; filename="${encodeURIComponent(file.original_name)}"`
+  );
+  return redirect;
 }
 
 export async function DELETE(

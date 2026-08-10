@@ -73,11 +73,11 @@ export async function POST(req: NextRequest) {
     const ext = ALLOWED_TYPES[mimeType] || path.extname(filename).replace(".", "").slice(0, 10);
     const storedName = `${generateId()}.${ext}`;
 
-    await uploadFile(storedName, fileData, mimeType);
+    const blobUrl = await uploadFile(storedName, fileData, mimeType);
 
     await sql`
       INSERT INTO course_files (id, course_id, original_name, stored_name, mime_type, size)
-      VALUES (${generateId()}, ${courseId}, ${filename}, ${storedName}, ${mimeType}, ${size})
+      VALUES (${generateId()}, ${courseId}, ${filename}, ${blobUrl}, ${mimeType}, ${size})
     `;
 
     return NextResponse.json({ message: "File uploaded" }, { status: 201 });

@@ -2,7 +2,7 @@
 
 A free course platform where you upload video courses (via embed codes) with PDF/materials, and students register with email verification and get access via one-time codes.
 
-Deployed-ready for **Vercel** with **Neon Postgres** (database) and **Cloudflare R2** (file storage).
+Deployed-ready for **Vercel** with **Neon Postgres** (database) and **Vercel Blob** (file storage).
 
 ## Features
 
@@ -15,7 +15,7 @@ Deployed-ready for **Vercel** with **Neon Postgres** (database) and **Cloudflare
 ## Requirements
 
 - Node.js 20+
-- Free accounts: [Neon](https://neon.tech) (Postgres) + [Cloudflare R2](https://dash.cloudflare.com) (file storage)
+- Free accounts: [Neon](https://neon.tech) (Postgres) + a Vercel Blob store (5GB free on Hobby)
 - An email account that supports SMTP (Gmail recommended)
 
 ## Setup
@@ -27,7 +27,7 @@ Deployed-ready for **Vercel** with **Neon Postgres** (database) and **Cloudflare
 
 2. **Create a Neon database** (free): https://neon.tech → new project → copy the connection string → set as `DATABASE_URL` in `.env` and `.env.local`
 
-3. **Create an R2 bucket** (free): Cloudflare dashboard → R2 → Create bucket (name: `coursehub`) → R2 API Tokens → Create (Object Read & Write) → set `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` in `.env` and `.env.local`
+3. **Create a Vercel Blob store** (free): Vercel dashboard → **Storage** → **Create** → **Blob** → name it `coursehub` → copy the `.env.local` snippet → set `BLOB_READ_WRITE_TOKEN` in `.env` and `.env.local`
 
 4. **Set your SMTP email** in `.env` / `.env.local` so students receive verification codes:
    ```
@@ -53,7 +53,7 @@ Deployed-ready for **Vercel** with **Neon Postgres** (database) and **Cloudflare
 
 1. Push this repo to GitHub.
 2. Import the repo on [vercel.com](https://vercel.com/new).
-3. Add the environment variables (from `.env`): `DATABASE_URL`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`, `JWT_SECRET`, `SMTP_*`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
+3. Add the environment variables (from `.env`): `DATABASE_URL`, `BLOB_READ_WRITE_TOKEN`, `JWT_SECRET`, `SMTP_*`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
 4. Deploy.
 5. After deploy, create the admin:
    ```
@@ -72,6 +72,6 @@ Deployed-ready for **Vercel** with **Neon Postgres** (database) and **Cloudflare
 ## Notes
 
 - Videos are added by **pasting the embed code** (iframe). Just copy the "Embed" code from YouTube / Vimeo / Google Drive and paste it.
-- Files (PDF, Word, ZIP...) are stored in Cloudflare R2.
+- Files (PDF, Word, ZIP...) are stored in Vercel Blob. Note: the Hobby plan limits request body size to ~4.5MB, so keep uploaded files under that.
 - You can generate more codes anytime from the course management page.
 - `JWT_SECRET` must stay the same across all environments — it's also the key that encrypts access codes.
