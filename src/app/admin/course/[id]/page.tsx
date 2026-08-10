@@ -37,6 +37,7 @@ export default function ManageCoursePage({ params }: { params: { id: string } })
   const [loading, setLoading] = useState(true);
 
   const [videoForm, setVideoForm] = useState({ title: "", embedCode: "" });
+  const [videoFormOpen, setVideoFormOpen] = useState(false);
   const [addingVideo, setAddingVideo] = useState(false);
   const [videoError, setVideoError] = useState("");
 
@@ -100,6 +101,7 @@ export default function ManageCoursePage({ params }: { params: { id: string } })
         setVideoError(data.error);
       } else {
         setVideoForm({ title: "", embedCode: "" });
+        setVideoFormOpen(false);
         await load();
       }
     } catch (err: any) {
@@ -259,12 +261,12 @@ export default function ManageCoursePage({ params }: { params: { id: string } })
           <section>
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Videos</h2>
-              <button onClick={() => setAddingVideo(!addingVideo)} className="btn-primary !py-1.5 !text-xs">
+              <button onClick={() => setVideoFormOpen(!videoFormOpen)} className="btn-primary !py-1.5 !text-xs">
                 <Plus className="mr-1 h-4 w-4" /> Add Video
               </button>
             </div>
 
-            {addingVideo && (
+            {videoFormOpen && (
               <form onSubmit={handleAddVideo} className="card mb-4 space-y-3 p-5">
                 <div>
                   <label className="label">Video Title</label>
@@ -299,7 +301,7 @@ export default function ManageCoursePage({ params }: { params: { id: string } })
                   <button type="submit" disabled={addingVideo} className="btn-primary flex-1">
                     {addingVideo ? "Adding..." : "Add Video"}
                   </button>
-                  <button type="button" onClick={() => setAddingVideo(false)} className="btn-outline">
+                  <button type="button" onClick={() => setVideoFormOpen(false)} className="btn-outline">
                     Cancel
                   </button>
                 </div>
