@@ -14,8 +14,8 @@ const schema = z.object({
 export async function GET() {
   const courses = await sql`
     SELECT c.*,
-      (SELECT COUNT(*) FROM videos v WHERE v.course_id = c.id) as "videoCount",
-      (SELECT COUNT(*) FROM course_files f WHERE f.course_id = c.id) as "fileCount"
+      (SELECT COUNT(*)::int FROM videos v WHERE v.course_id = c.id) as "videoCount",
+      (SELECT COUNT(*)::int FROM course_files f WHERE f.course_id = c.id) as "fileCount"
     FROM courses c ORDER BY c.created_at DESC
   `;
   return NextResponse.json({ courses });

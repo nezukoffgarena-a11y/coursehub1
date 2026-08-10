@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1106.0",
     "@neondatabase/serverless": "^0.10.4",
     "@next/swc-win32-x64-msvc": "^14.2.15",
     "@vercel/blob": "^2.7.0",

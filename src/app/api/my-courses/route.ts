@@ -8,8 +8,8 @@ export async function GET() {
 
     const enrolled = await sql`
       SELECT e.course_id as "courseId", e.enrolled_at as "enrolledAt", c.title, c.description, c.thumbnail,
-        (SELECT COUNT(*) FROM videos v WHERE v.course_id = c.id) as "videoCount",
-        (SELECT COUNT(*) FROM course_files f WHERE f.course_id = c.id) as "fileCount"
+        (SELECT COUNT(*)::int FROM videos v WHERE v.course_id = c.id) as "videoCount",
+        (SELECT COUNT(*)::int FROM course_files f WHERE f.course_id = c.id) as "fileCount"
       FROM enrollments e JOIN courses c ON c.id = e.course_id
       WHERE e.student_id = ${student.id}
       ORDER BY e.enrolled_at DESC
