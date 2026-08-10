@@ -63,22 +63,31 @@ export default function ManageCoursePage({ params }: { params: { id: string } })
   }, [router]);
 
   async function load() {
-    const res = await fetch(`/api/courses/${params.id}`);
-    const data = await res.json();
-    setCourse(data.course);
-    setVideos(data.videos || []);
-    setFiles(data.files || []);
-    setCodes(data.codes || []);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
+    try {
+      const res = await fetch(`/api/courses/${params.id}`, { signal: controller.signal });
+      const data = await res.json();
+      setCourse(data.course);
+      setVideos(data.videos || []);
+      setFiles(data.files || []);
+      setCodes(data.codes || []);
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   async function handleAddVideo(e: React.FormEvent) {
     e.preventDefault();
     setVideoError("");
     setAddingVideo(true);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
     try {
       const res = await fetch("/api/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           courseId: params.id,
           title: videoForm.title,
@@ -93,9 +102,14 @@ export default function ManageCoursePage({ params }: { params: { id: string } })
         setVideoForm({ title: "", embedCode: "" });
         await load();
       }
-    } catch {
-      setVideoError("Network error");
+    } catch (err: any) {
+      setVideoError(
+        err?.name === "AbortError"
+          ? "Request timed out. Please try again."
+          : "Network error. Please try again."
+      );
     } finally {
+      clearTimeout(timeout);
       setAddingVideo(false);
     }
   }
