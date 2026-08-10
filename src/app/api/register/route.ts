@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
-import { generateId, generateOtp } from "@/lib/utils";
-import { sendVerificationEmail } from "@/lib/mail";
+import { generateId } from "@/lib/utils";
 import bcrypt from "bcryptjs";
+import { signToken, COOKIE_NAME } from "@/lib/auth";
 import { z } from "zod";
 
 export const dynamic = "force-dynamic";
@@ -28,28 +28,30 @@ export async function POST(req: NextRequest) {
 
     const id = generateId();
     const hash = await bcrypt.hash(body.password, 10);
-    const otp = generateOtp();
 
     await sql`
       INSERT INTO students (id, email, password, name, is_verified)
-      VALUES (${id}, ${email}, ${hash}, ${body.name}, false)
+      VALUES (${id}, ${email}, ${hash}, ${body.name}, true)
     `;
 
-    await sql`
-      INSERT INTO email_verifications (id, student_id, code, expires_at)
-      VALUES (${generateId()}, ${id}, ${otp}, ${new Date(Date.now() + 15 * 60 * 1000).toISOString()})
-    `;
-
-    try {
-      await sendVerificationEmail(body.email, body.name, otp);
-    } catch (e) {
-      console.error("Email send failed:", e);
-    }
-
-    return NextResponse.json({
-      message: "Registration successful. Verification code sent to your email.",
-      studentId: id,
+    const token = signToken({
+      id,
+      email,
+      name: body.name,
+      role: "student",
     });
+    const res = NextResponse.json({
+      message: "Registration successful",
+      role: "student",
+      name: body.name,
+    });
+    res.cookies.set(COOKIE_NAME, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+    return res;
   } catch (e: any) {
     if (e.name === "ZodError") {
       return NextResponse.json({ error: e.errors[0].message }, { status: 400 });

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Copy, FileText, KeyRound, Link2, Plus, Trash2 } from "lucide-react";
+import { Copy, FileText, GraduationCap, KeyRound, Link2, Plus, Trash2 } from "lucide-react";
 
 type Video = {
   id: string;
@@ -176,16 +176,23 @@ export default function ManageCoursePage({ params }: { params: { id: string } })
   const usedCodes = codes.filter((c) => c.usedBy).length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white">
+    <div className="min-h-screen bg-slate-50">
+      <header className="border-b border-gray-200 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/admin" className="text-sm font-medium text-gray-500 hover:text-primary">
+            <Link href="/admin" className="btn-outline !border-transparent !bg-transparent !px-2 !py-1.5">
               ← Back
             </Link>
-            <span className="text-xl font-bold text-primary">📚 CourseHub</span>
+            <Link href="/" className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-indigo-400">
+                <GraduationCap className="h-5 w-5 text-white" />
+              </span>
+              <span className="text-lg font-extrabold tracking-tight text-gray-900">
+                Course<span className="text-primary">Hub</span>
+              </span>
+            </Link>
           </div>
-          <button onClick={handleLogout} className="btn-outline !py-1.5 !text-xs">
+          <button onClick={handleLogout} className="btn-outline !py-2 !text-xs">
             Logout
           </button>
         </div>

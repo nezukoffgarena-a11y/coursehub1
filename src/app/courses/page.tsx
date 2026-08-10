@@ -3,7 +3,16 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { KeyRound, PlayCircle, FileText } from "lucide-react";
+import SiteHeader from "@/components/SiteHeader";
+import {
+  BookOpen,
+  CheckCircle2,
+  FileText,
+  KeyRound,
+  Lock,
+  PlayCircle,
+  Search,
+} from "lucide-react";
 
 type Course = {
   id: string;
@@ -12,6 +21,15 @@ type Course = {
   videoCount: number;
   fileCount: number;
 };
+
+const GRADIENTS = [
+  "from-primary to-indigo-400",
+  "from-violet-500 to-fuchsia-400",
+  "from-sky-500 to-cyan-400",
+  "from-emerald-500 to-teal-400",
+  "from-rose-500 to-pink-400",
+  "from-amber-500 to-orange-400",
+];
 
 export default function BrowsePage() {
   const router = useRouter();
@@ -23,6 +41,7 @@ export default function BrowsePage() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     (async () => {
@@ -42,6 +61,12 @@ export default function BrowsePage() {
       }
     })();
   }, []);
+
+  const filtered = courses.filter(
+    (c) =>
+      c.title.toLowerCase().includes(query.toLowerCase()) ||
+      c.description.toLowerCase().includes(query.toLowerCase())
+  );
 
   async function handleEnroll(e: React.FormEvent) {
     e.preventDefault();
@@ -77,96 +102,87 @@ export default function BrowsePage() {
     }
   }
 
-  async function handleLogout() {
-    await fetch("/api/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="text-xl font-bold text-primary">
-            📚 CourseHub
-          </Link>
-          <div className="flex items-center gap-4">
-            {user ? (
-              <>
-                <span className="hidden text-sm text-gray-600 sm:block">
-                  Hi, {user.name}
-                </span>
-                {user.role === "admin" ? (
-                  <Link href="/admin" className="btn-primary !py-1.5 !text-xs">
-                    Admin Panel
-                  </Link>
-                ) : (
-                  <Link href="/dashboard" className="btn-primary !py-1.5 !text-xs">
-                    My Courses
-                  </Link>
-                )}
-                <button
-                  onClick={handleLogout}
-                  className="btn-outline !py-1.5 !text-xs"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <Link href="/login" className="btn-primary !py-1.5 !text-xs">
-                Login
-              </Link>
-            )}
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50/60 to-white">
+      <SiteHeader />
+
+      <main className="mx-auto max-w-6xl px-6 py-12">
+        <div className="mb-10 text-center">
+          <p className="eyebrow">Catalog</p>
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+            Browse Courses
+          </h1>
+          <p className="mx-auto mt-3 max-w-xl text-gray-600">
+            Pick a course and enter your access code to start learning instantly.
+          </p>
+          <div className="relative mx-auto mt-6 max-w-md">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              className="input !pl-10"
+              placeholder="Search courses..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
           </div>
         </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <h1 className="mb-2 text-2xl font-bold text-gray-900">Browse Courses</h1>
-        <p className="mb-8 text-gray-500">
-          Pick a course and enter your access code to start learning.
-        </p>
 
         {loading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="card h-52 animate-pulse" />
+              <div key={i} className="card h-64 animate-pulse" />
             ))}
           </div>
-        ) : courses.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="card mx-auto max-w-md p-12 text-center">
-            <h2 className="text-lg font-semibold text-gray-800">No courses yet</h2>
-            <p className="mt-2 text-sm text-gray-500">Courses will appear here soon.</p>
+            <BookOpen className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+            <h2 className="text-lg font-semibold text-gray-800">
+              {query ? "No courses match your search" : "No courses yet"}
+            </h2>
+            <p className="mt-2 text-sm text-gray-500">
+              {query
+                ? "Try a different keyword."
+                : "Courses will appear here soon."}
+            </p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((course) => {
+            {filtered.map((course, idx) => {
               const isEnrolled = enrolledIds.includes(course.id);
               return (
-                <div key={course.id} className="card overflow-hidden">
-                  <div className="flex h-32 items-center justify-center bg-gradient-to-br from-primary to-indigo-400">
-                    <PlayCircle className="h-12 w-12 text-white/80" />
+                <div
+                  key={course.id}
+                  className="card group overflow-hidden transition hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/10"
+                >
+                  <div
+                    className={`relative flex h-36 items-center justify-center bg-gradient-to-br ${GRADIENTS[idx % GRADIENTS.length]}`}
+                  >
+                    <PlayCircle className="h-14 w-14 text-white/80 transition group-hover:scale-110" />
+                    {isEnrolled && (
+                      <span className="badge absolute left-3 top-3 bg-white/95 text-green-600 shadow-sm">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Enrolled
+                      </span>
+                    )}
                   </div>
                   <div className="p-5">
-                    <h3 className="font-semibold text-gray-900">{course.title}</h3>
-                    <p className="mt-1 line-clamp-2 text-sm text-gray-500">
+                    <h3 className="font-bold text-gray-900 transition group-hover:text-primary">
+                      {course.title}
+                    </h3>
+                    <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-gray-500">
                       {course.description}
                     </p>
-                    <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
-                      <span className="inline-flex items-center gap-1">
-                        <PlayCircle className="h-4 w-4" /> {course.videoCount} videos
+                    <div className="mt-4 flex items-center gap-4 text-xs text-gray-500">
+                      <span className="inline-flex items-center gap-1.5">
+                        <PlayCircle className="h-4 w-4 text-primary" /> {course.videoCount} videos
                       </span>
-                      <span className="inline-flex items-center gap-1">
-                        <FileText className="h-4 w-4" /> {course.fileCount} files
+                      <span className="inline-flex items-center gap-1.5">
+                        <FileText className="h-4 w-4 text-primary" /> {course.fileCount} files
                       </span>
                     </div>
-                    <div className="mt-4">
+                    <div className="mt-5">
                       {isEnrolled ? (
-                        <Link
-                          href={`/course/${course.id}`}
-                          className="btn-primary w-full"
-                        >
-                          Open Course
+                        <Link href={`/course/${course.id}`} className="btn-primary w-full">
+                          <PlayCircle className="h-4 w-4" /> Open Course
                         </Link>
                       ) : (
                         <button
@@ -177,7 +193,7 @@ export default function BrowsePage() {
                           }}
                           className="btn-outline w-full"
                         >
-                          Enter Access Code
+                          <KeyRound className="h-4 w-4" /> Enter Access Code
                         </button>
                       )}
                     </div>
@@ -190,13 +206,13 @@ export default function BrowsePage() {
       </main>
 
       {modalCourse && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-8">
-            <div className="mb-4 text-center">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <KeyRound className="h-6 w-6 text-primary" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+            <div className="mb-5 text-center">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-indigo-400 shadow-md shadow-indigo-500/30">
+                <Lock className="h-7 w-7 text-white" />
               </div>
-              <h2 className="text-lg font-bold text-gray-900">{modalCourse.title}</h2>
+              <h2 className="text-xl font-extrabold text-gray-900">{modalCourse.title}</h2>
               <p className="mt-1 text-sm text-gray-500">
                 Enter your access code to enroll
               </p>
@@ -205,21 +221,17 @@ export default function BrowsePage() {
               <input
                 type="text"
                 required
-                className="input text-center !text-xl !tracking-widest uppercase"
+                className="input text-center !text-xl !tracking-widest uppercase !font-mono"
                 placeholder="ACCESS CODE"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
               />
               {error && (
-                <div className="rounded-lg bg-red-50 px-4 py-2.5 text-center text-sm text-red-600">
+                <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-center text-sm text-red-600">
                   {error}
                 </div>
               )}
-              <button
-                type="submit"
-                disabled={submitting}
-                className="btn-primary w-full"
-              >
+              <button type="submit" disabled={submitting} className="btn-primary w-full !py-3">
                 {submitting ? "Checking..." : "Enroll Now"}
               </button>
               <button

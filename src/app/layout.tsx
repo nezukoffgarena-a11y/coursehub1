@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Course Platform - Free Video Courses",
-  description: "Free video courses for students with PDF materials",
+  title: {
+    default: "CourseHub - Free Video Courses for Students",
+    template: "%s | CourseHub",
+  },
+  description:
+    "High-quality free video courses with PDF materials. Register, use your access code, and start learning today.",
 };
 
 export default function RootLayout({

@@ -12,7 +12,3 @@ export function generateCode(length = 8): string {
   }
   return result;
 }
-
-export function generateOtp(): string {
-  return String(crypto.randomInt(100000, 1000000));
-}

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
-import { generateId, generateOtp } from "@/lib/utils";
-import { sendVerificationEmail } from "@/lib/mail";
 import bcrypt from "bcryptjs";
 import { signToken, COOKIE_NAME } from "@/lib/auth";
 import { z } from "zod";
@@ -51,13 +49,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Invalid email or password" },
         { status: 401 }
-      );
-    }
-
-    if (!student.is_verified) {
-      return NextResponse.json(
-        { error: "Please verify your email first", needsVerification: true },
-        { status: 403 }
       );
     }
 

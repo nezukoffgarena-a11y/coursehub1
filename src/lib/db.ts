@@ -88,14 +88,6 @@ const MIGRATIONS = [
     is_verified BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
-  `CREATE TABLE IF NOT EXISTS email_verifications (
-    id TEXT PRIMARY KEY,
-    student_id TEXT NOT NULL REFERENCES students(id) ON DELETE CASCADE,
-    code TEXT NOT NULL,
-    expires_at TIMESTAMPTZ NOT NULL,
-    used BOOLEAN NOT NULL DEFAULT false,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-  )`,
   `CREATE TABLE IF NOT EXISTS courses (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,

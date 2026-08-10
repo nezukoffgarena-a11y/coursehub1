@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { KeyRound, Plus, Settings, Film } from "lucide-react";
+import { GraduationCap, KeyRound, PlayCircle, Plus, Settings, Shield, Video } from "lucide-react";
 
 type Course = {
   id: string;
@@ -79,36 +79,76 @@ export default function AdminPage() {
     router.refresh();
   }
 
+  const totalVideos = courses.reduce((sum, c) => sum + c.videoCount, 0);
+  const totalFiles = courses.reduce((sum, c) => sum + c.fileCount, 0);
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white">
+    <div className="min-h-screen bg-slate-50">
+      <header className="border-b border-gray-200 bg-white/80 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-xl font-bold text-primary">
-              📚 CourseHub
+            <Link href="/" className="flex items-center gap-2.5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-indigo-400 shadow-sm shadow-indigo-500/30">
+                <GraduationCap className="h-5 w-5 text-white" />
+              </span>
+              <span className="text-lg font-extrabold tracking-tight text-gray-900">
+                Course<span className="text-primary">Hub</span>
+              </span>
             </Link>
-            <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              Admin
+            <span className="badge bg-primary/10 text-primary">
+              <Shield className="h-3.5 w-3.5" /> Admin
             </span>
           </div>
-          <button onClick={handleLogout} className="btn-outline !py-1.5 !text-xs">
+          <button onClick={handleLogout} className="btn-outline !py-2 !text-xs">
             Logout
           </button>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-10">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8 flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Courses</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900">Courses</h1>
             <p className="mt-1 text-gray-500">
               Create courses, add videos and materials, manage access codes.
             </p>
           </div>
-          <button onClick={() => setShowCreate(true)} className="btn-primary">
-            <Plus className="mr-2 h-4 w-4" /> New Course
+          <button onClick={() => setShowCreate(true)} className="btn-primary !py-2.5">
+            <Plus className="h-4 w-4" /> New Course
           </button>
         </div>
+
+        {!loading && courses.length > 0 && (
+          <div className="mb-8 grid gap-4 sm:grid-cols-3">
+            <div className="card flex items-center gap-4 p-5">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-indigo-400">
+                <PlayCircle className="h-6 w-6 text-white" />
+              </span>
+              <div>
+                <p className="text-2xl font-extrabold text-gray-900">{courses.length}</p>
+                <p className="text-sm text-gray-500">Total Courses</p>
+              </div>
+            </div>
+            <div className="card flex items-center gap-4 p-5">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-400">
+                <Video className="h-6 w-6 text-white" />
+              </span>
+              <div>
+                <p className="text-2xl font-extrabold text-gray-900">{totalVideos}</p>
+                <p className="text-sm text-gray-500">Video Lessons</p>
+              </div>
+            </div>
+            <div className="card flex items-center gap-4 p-5">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-cyan-400">
+                <KeyRound className="h-6 w-6 text-white" />
+              </span>
+              <div>
+                <p className="text-2xl font-extrabold text-gray-900">{totalFiles}</p>
+                <p className="text-sm text-gray-500">Materials</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -118,7 +158,7 @@ export default function AdminPage() {
           </div>
         ) : courses.length === 0 ? (
           <div className="card mx-auto max-w-md p-12 text-center">
-            <Film className="mx-auto mb-4 h-12 w-12 text-gray-300" />
+            <PlayCircle className="mx-auto mb-4 h-12 w-12 text-gray-300" />
             <h2 className="text-lg font-semibold text-gray-800">No courses yet</h2>
             <p className="mt-2 text-sm text-gray-500">
               Create your first course and start sharing knowledge.
@@ -129,7 +169,7 @@ export default function AdminPage() {
             {courses.map((course) => (
               <div key={course.id} className="card overflow-hidden">
                 <div className="flex h-32 items-center justify-center bg-gradient-to-br from-primary to-indigo-400">
-                  <Film className="h-12 w-12 text-white/80" />
+                  <PlayCircle className="h-12 w-12 text-white/80" />
                 </div>
                 <div className="p-5">
                   <h3 className="font-semibold text-gray-900">{course.title}</h3>
