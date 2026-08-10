@@ -4,6 +4,8 @@ import { generateId, generateOtp } from "@/lib/utils";
 import { sendVerificationEmail } from "@/lib/mail";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const schema = z.object({
   email: z.string().email(),
 });

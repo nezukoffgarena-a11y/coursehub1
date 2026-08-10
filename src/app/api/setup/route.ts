@@ -3,6 +3,8 @@ import { sql } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import bcrypt from "bcryptjs";
 
+export const dynamic = "force-dynamic";
+
 export async function POST() {
   try {
     const email = (process.env.ADMIN_EMAIL || "admin@example.com").toLowerCase();

@@ -3,6 +3,8 @@ import { sql } from "@/lib/db";
 import { getSession, requireAdmin } from "@/lib/auth";
 import { getFileUrl, deleteFile } from "@/lib/storage";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }

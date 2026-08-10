@@ -5,6 +5,8 @@ import { decryptCode } from "@/lib/db";
 import { generateId } from "@/lib/utils";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const schema = z.object({
   courseId: z.string(),
   code: z.string().min(1).max(30),

@@ -6,6 +6,7 @@ import { generateId } from "@/lib/utils";
 import path from "path";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const ALLOWED_TYPES: Record<string, string> = {
   "application/pdf": "pdf",

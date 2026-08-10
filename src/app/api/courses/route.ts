@@ -5,6 +5,8 @@ import { generateId, generateCode } from "@/lib/utils";
 import { encryptCode } from "@/lib/db";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const schema = z.object({
   title: z.string().min(2),
   description: z.string().optional(),

@@ -6,6 +6,8 @@ import bcrypt from "bcryptjs";
 import { signToken, COOKIE_NAME } from "@/lib/auth";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const schema = z.object({
   email: z.string().email(),
   password: z.string().min(1),

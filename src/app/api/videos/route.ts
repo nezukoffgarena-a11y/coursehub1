@@ -4,6 +4,8 @@ import { requireAdmin } from "@/lib/auth";
 import { generateId } from "@/lib/utils";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const schema = z.object({
   courseId: z.string(),
   title: z.string().min(1),
