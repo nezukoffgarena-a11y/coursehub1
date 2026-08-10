@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { put } from "@vercel/blob/client";
 import { Copy, FileText, GraduationCap, KeyRound, Link2, Plus, Trash2 } from "lucide-react";
 
 type Video = {
@@ -41,6 +42,7 @@ export default function ManageCoursePage({ params }: { params: { id: string } })
 
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   const [addCodesCount, setAddCodesCount] = useState(10);
   const [addingCodes, setAddingCodes] = useState(false);
@@ -109,21 +111,55 @@ export default function ManageCoursePage({ params }: { params: { id: string } })
     if (!file) return;
     setUploading(true);
     setUploadError("");
+    setUploadProgress(0);
     try {
-      const formData = new FormData();
-      formData.append("courseId", params.id);
-      formData.append("file", file);
-      const res = await fetch("/api/files/upload", {
+      const ext = (file.name.split(".").pop() || "bin")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "")
+        .slice(0, 10);
+      const pathname = `${(crypto as any).randomUUID?.() || Math.random().toString(36).slice(2)}.${ext || "bin"}`;
+
+      const tokenRes = await fetch("/api/files/upload-handler", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pathname }),
+      });
+      const tokenData = await tokenRes.json();
+      if (!tokenRes.ok || !tokenData.token) {
+        setUploadError(tokenData.error || "Upload not authorized");
+        return;
+      }
+
+      const blob = await put(pathname, file, {
+        access: "private",
+        token: tokenData.token,
+        contentType: file.type || undefined,
+        onUploadProgress: (progress) => setUploadProgress(progress.percentage),
+      });
+
+      const res = await fetch("/api/files", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          courseId: params.id,
+          blobUrl: blob.url,
+          filename: file.name,
+          mimeType: file.type,
+          size: file.size,
+        }),
       });
       const data = await res.json();
-      if (!res.ok) setUploadError(data.error);
-      else await load();
-    } catch {
-      setUploadError("Upload failed");
+      if (!res.ok) {
+        setUploadError(data.error);
+      } else {
+        await load();
+      }
+    } catch (err) {
+      console.error(err);
+      setUploadError("Upload failed. Check the file type or size and try again.");
     } finally {
       setUploading(false);
+      setUploadProgress(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
@@ -287,7 +323,12 @@ export default function ManageCoursePage({ params }: { params: { id: string } })
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-900">Materials (PDF, etc.)</h2>
               <button onClick={() => fileInputRef.current?.click()} disabled={uploading} className="btn-primary !py-1.5 !text-xs">
-                <Plus className="mr-1 h-4 w-4" /> {uploading ? "Uploading..." : "Upload File"}
+                <Plus className="mr-1 h-4 w-4" />{" "}
+                {uploading
+                  ? uploadProgress !== null
+                    ? `Uploading ${uploadProgress}%`
+                    : "Uploading..."
+                  : "Upload File"}
               </button>
               <input
                 ref={fileInputRef}
