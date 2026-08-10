@@ -3,7 +3,7 @@ import crypto from "crypto";
 
 const connectionString =
   process.env.DATABASE_URL ||
-  "postgres://user:password@localhost:5432/coursehub";
+  "postgresql://user:password@localhost:5432/coursehub";
 
 type SqlTag = (
   strings: TemplateStringsArray,
@@ -14,7 +14,19 @@ declare global {
   var __sql: SqlTag | undefined;
 }
 
-const neonSql = neon(connectionString);
+type NeonClient = (
+  strings: TemplateStringsArray | string,
+  ...values: any[]
+) => Promise<any[]>;
+
+let neonSql: NeonClient | null = null;
+
+function getNeon(): NeonClient {
+  if (!neonSql) {
+    neonSql = neon(connectionString) as NeonClient;
+  }
+  return neonSql;
+}
 
 let initPromise: Promise<void> | null = null;
 
@@ -28,7 +40,7 @@ async function ensureInit(): Promise<void> {
 function createSql(): SqlTag {
   return async (strings, ...values) => {
     await ensureInit();
-    return neonSql(strings, ...values) as Promise<any[]>;
+    return getNeon()(strings, ...values) as Promise<any[]>;
   };
 }
 
@@ -131,7 +143,8 @@ const MIGRATIONS = [
 ];
 
 export async function initDb(): Promise<void> {
+  const client = getNeon();
   for (const migration of MIGRATIONS) {
-    await neonSql(migration);
+    await client(migration);
   }
 }
