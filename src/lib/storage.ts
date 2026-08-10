@@ -1,4 +1,4 @@
-import { put, get, del } from "@vercel/blob";
+import { put, del } from "@vercel/blob";
 
 export async function uploadFile(
   key: string,
@@ -13,10 +13,13 @@ export async function uploadFile(
   return blob.url;
 }
 
-export async function getFileUrl(blobUrl: string): Promise<string> {
-  const result = await get(blobUrl, { access: "private" });
-  if (!result) throw new Error("Blob not found");
-  return result.blob.downloadUrl;
+export async function streamBlob(blobUrl: string): Promise<Response> {
+  const token = process.env.BLOB_READ_WRITE_TOKEN;
+  if (!token) throw new Error("Blob storage not configured");
+  return fetch(blobUrl, {
+    headers: { authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
 }
 
 export async function deleteFile(blobUrl: string): Promise<void> {

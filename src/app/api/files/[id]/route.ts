@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getSession, requireAdmin } from "@/lib/auth";
-import { getFileUrl, deleteFile } from "@/lib/storage";
+import { streamBlob, deleteFile } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -31,20 +31,32 @@ export async function GET(
     }
   }
 
-  let signedUrl: string;
+  let upstream: Response;
   try {
-    signedUrl = await getFileUrl(file.stored_name);
+    upstream = await streamBlob(file.stored_name);
+    if (!upstream.ok) {
+      console.error("Blob fetch failed:", upstream.status);
+      return NextResponse.json({ error: "File missing on storage" }, { status: 404 });
+    }
   } catch (e) {
-    console.error("Blob signed URL failed:", e);
+    console.error("Blob stream failed:", e);
     return NextResponse.json({ error: "File missing on storage" }, { status: 404 });
   }
 
-  const redirect = NextResponse.redirect(signedUrl);
-  redirect.headers.set(
+  const headers = new Headers();
+  headers.set(
+    "Content-Type",
+    upstream.headers.get("content-type") || file.mime_type || "application/octet-stream"
+  );
+  const contentLength = upstream.headers.get("content-length");
+  if (contentLength) headers.set("Content-Length", contentLength);
+  headers.set(
     "Content-Disposition",
     `inline; filename="${encodeURIComponent(file.original_name)}"`
   );
-  return redirect;
+  headers.set("Cache-Control", "no-store");
+
+  return new NextResponse(upstream.body, { status: 200, headers });
 }
 
 export async function DELETE(
